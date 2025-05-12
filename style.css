@@ -86,27 +86,27 @@ body {
 }
 
 #controls button {
-    padding: 8px 12px; /* 패딩 약간 조절 */
-    margin: 3px; /* 마진 약간 조절 */
+    padding: 8px 12px; 
+    margin: 3px; 
     background-color: #007bff;
     color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    flex-grow: 1; /* 버튼들이 가능한 공간을 채우도록 (선택 사항) */
-    min-width: 100px; /* 최소 너비 (선택 사항) */
+    /* flex-grow: 1;  <-- 이 줄을 삭제하거나 주석 처리 */
+    min-width: 90px; /* 최소 너비를 90px 정도로 줄여봄 (원하는 값으로 조정) */
 }
 
 #controls button:hover {
     background-color: #0056b3;
 }
-
-#controls hr { /* 구분선 스타일 명확히 */
-    width: 100%;
-    border: none;
-    border-top: 1px solid #eee;
-    margin: 8px 0; /* 구분선 위아래 여백 */
+/* 만약 HTML에서 <hr>을 삭제하지 않으려면, CSS로 숨길 수 있습니다 */
+#controls hr {
+    display: none; /* hr 태그를 화면에서 숨김 */
 }
+
+
+
 
 
 /* --- 애니메이션 정의 --- */
