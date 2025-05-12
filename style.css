@@ -139,8 +139,24 @@ body {
 
 /* 이미지 기본 transform 설정 (CSS 변수 사용) */
 #displayedImage {
-    /* ... 기존 스타일 ... */
     transform: rotate(var(--current-rotation, 0deg)) scale(var(--current-scale, 1));
     filter: var(--current-filter, none);
     transition: transform 0.3s ease, filter 0.3s ease, opacity 0.3s ease; /* opacity 트랜지션 추가 */
+}
+
+@keyframes glitch-effect {
+    0%, 100% { clip-path: inset(0); }
+    10% { clip-path: inset(5px 0 85px 0); transform: translateX(-3px); }
+    20% { clip-path: inset(70px 0 10px 0); transform: translateX(3px); }
+    /* ... 더 많은 단계 추가 ... */
+    90% { clip-path: inset(40px 0 40px 0); transform: translateX(-2px); }
+}
+.glitching {
+    animation: glitch-effect 0.3s linear 2; /* 0.3초 동안 2번 반복 */
+}
+
+.neon-border {
+    /* 기존 filter와 중첩될 수 있으므로 주의 */
+    filter: var(--current-filter, none) drop-shadow(0 0 5px #00ffff) drop-shadow(0 0 10px #00ffff) drop-shadow(0 0 15px #00ffff);
+    /* #00ffff는 시안색 네온 예시 */
 }
