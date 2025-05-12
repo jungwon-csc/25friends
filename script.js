@@ -3,12 +3,12 @@
 // 동기들 정보 (이름과 이미지 경로)
 // images 폴더에 사진 파일이 있다고 가정합니다. 파일 이름과 확장자를 정확히 맞춰주세요.
 const friendsData = [
-    { name: "寝てる大谷", image: "/Users/csc-r174/douki_album/images/sleeping_otani.png" },
-    { name: "普通の大谷", image: "/Users/csc-r174/douki_album/images/otani.png" },
-    { name: "先生", image: "/Users/csc-r174/douki_album/images/suwabe.png" },
-    { name: "小枝", image: "/Users/csc-r174/douki_album/images/koeda.png" },
-    { name: "デウン", image: "/Users/csc-r174/douki_album/images/daeung.png" },
-    { name: "可愛さの塊", image: "/Users/csc-r174/douki_album/images/kawaii.png" }
+    { name: "寝てる大谷", image: "/images/sleeping_otani.png" },
+    { name: "普通の大谷", image: "/images/otani.png" },
+    { name: "先生", image: "/images/suwabe.png" },
+    { name: "小枝", image: "/images/koeda.png" },
+    { name: "デウン", image: "/images/daeung.png" },
+    { name: "可愛さの塊", image: "/images/kawaii.png" }
 ];
 
 const friendsListElement = document.getElementById('friendsList');
