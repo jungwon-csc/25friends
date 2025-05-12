@@ -238,3 +238,84 @@ function resetImageTransformations() {
     displayedImageElement.classList.remove('spinning', 'pulsing', 'blinking');
     updateImageTransform();
 }
+
+// 네온 효과 관련 변수
+let currentNeonBorderClass = ''; // 현재 적용된 네온 테두리 클래스
+
+// 이미지 스타일 업데이트 함수 (CSS 변수 사용 확인)
+function updateImageStyleVariables() {
+    displayedImageElement.style.setProperty('--current-rotation', `${currentRotation}deg`);
+    displayedImageElement.style.setProperty('--current-scale', currentScale);
+    displayedImageElement.style.setProperty('--current-filter', currentFilter); // 흑백 필터 등 기본 필터
+    
+    // 네온 효과는 클래스를 통해 CSS 변수(--neon-effect-filter)가 설정되므로, 
+    // 여기서는 직접 설정하지 않아도 됩니다.
+    // 만약 JS로 직접 네온 필터 값을 제어한다면 여기서 설정합니다.
+}
+
+// 기존 updateImageTransform 함수는 이름을 updateImageStyleVariables로 바꾸거나,
+// 이 함수를 호출하도록 수정할 수 있습니다.
+// 여기서는 updateImageStyleVariables를 새로 만들고, 기존 함수들은 이 함수를 사용한다고 가정합니다.
+// 예를 들어 resetImageTransformations 끝에 updateImageStyleVariables(); 호출
+
+// 네온 테두리 효과 토글 (색상별)
+window.toggleNeonBorder = function(color) {
+    if (!displayedImageElement.src) return;
+
+    const newNeonClass = `neon-border-${color}`;
+
+    // 다른 네온 테두리 효과는 제거
+    if (currentNeonBorderClass && currentNeonBorderClass !== newNeonClass) {
+        displayedImageElement.classList.remove(currentNeonBorderClass);
+    }
+
+    // 현재 선택한 네온 테두리 효과 토글
+    displayedImageElement.classList.toggle(newNeonClass);
+
+    // 현재 적용된 클래스 업데이트
+    if (displayedImageElement.classList.contains(newNeonClass)) {
+        currentNeonBorderClass = newNeonClass;
+    } else {
+        currentNeonBorderClass = '';
+    }
+    // 네온 효과가 토글되면 CSS 변수가 자동으로 적용/해제되므로 filter 속성이 업데이트됩니다.
+}
+
+// 모든 네온 효과 끄기
+window.clearNeonEffects = function() {
+    if (!displayedImageElement.src) return;
+    if (currentNeonBorderClass) {
+        displayedImageElement.classList.remove(currentNeonBorderClass);
+        currentNeonBorderClass = '';
+    }
+    // CSS 변수를 직접 초기화 (만약 클래스 제거만으로 안된다면)
+    // displayedImageElement.style.setProperty('--neon-effect-filter', 'none');
+}
+
+// 이미지 변경 시 또는 초기화 시 모든 네온 효과 클래스 제거
+function resetImageTransformations() {
+    currentRotation = 0;
+    currentScale = 1;
+    currentFilter = ''; // 흑백 필터 등 기본 필터 상태 초기화
+
+    // 모든 애니메이션 클래스 제거
+    displayedImageElement.classList.remove('spinning', 'pulsing', 'blinking', 'glitching');
+    
+    // 모든 네온 효과 끄기
+    clearNeonEffects(); 
+    
+    updateImageStyleVariables(); // CSS 변수들 업데이트
+    // 이미지는 CSS에서 var(--current-rotation) 등을 사용하므로 transform 직접 설정 불필요
+    displayedImageElement.style.transform = `rotate(${currentRotation}deg) scale(${currentScale})`; // 기본 transform 복원
+}
+
+// 기존 applyFilter (흑백 필터) 함수 수정 (네온 효과와 충돌 방지)
+window.applyFilter = function() {
+    // 흑백 필터와 네온 효과는 동시에 적용 가능하도록 변경
+    if (currentFilter === '') {
+        currentFilter = 'grayscale(100%)';
+    } else {
+        currentFilter = '';
+    }
+    updateImageStyleVariables(); // --current-filter 변수 업데이트
+}
