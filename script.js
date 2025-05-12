@@ -1,7 +1,6 @@
 // script.js
 
 // 동기들 정보 (이름과 이미지 경로)
-// images 폴더에 사진 파일이 있다고 가정합니다. 파일 이름과 확장자를 정확히 맞춰주세요.
 const friendsData = [
     { name: "寝てる大谷", image: "./images/sleeping_otani.png" },
     { name: "普通の大谷", image: "./images/otani.png" },
@@ -11,311 +10,285 @@ const friendsData = [
     { name: "可愛さの塊", image: "./images/kawaii.png" }
 ];
 
+// 사용할 댄스 GIF 목록 (images 폴더 안에 실제 파일이 있어야 합니다!)
+// 파일 이름과 확장자를 정확히 맞춰주세요!
+const danceGifs = {
+    banana: "./images/bananacat.gif", // 'banana' 키로 바나나캣 GIF 경로 지정
+    happy:  "./images/happycat.gif"    // 'happy' 키로 해피캣 GIF 경로 지정
+};
+
+// DOM 요소 선택
 const friendsListElement = document.getElementById('friendsList');
 const displayedImageElement = document.getElementById('displayedImage');
-const imageContainerElement = document.getElementById('imageContainer');
+const imageContainerElement = document.getElementById('imageContainer'); // 댄스 GIF를 위해 필요
 const currentFriendNameElement = document.getElementById('currentFriendName');
 const controlsElement = document.getElementById('controls');
 
+// 전역 상태 변수 (이전과 동일)
 let currentRotation = 0;
 let currentScale = 1;
-let currentFilter = ''; // 'grayscale(100%)' 또는 ''
+let currentBwFilter = '';
+let activeDanceGifElement = null;
+let danceTimeoutId = null;
 
-// 동기 이름 목록 생성
-friendsData.forEach(friend => {
-    const listItem = document.createElement('li');
-    listItem.textContent = friend.name;
-    listItem.dataset.image = friend.image; // 이미지 경로를 data 속성에 저장
-    listItem.dataset.name = friend.name;   // 이름도 data 속성에 저장
-    listItem.addEventListener('click', () => {
-        displayImage(friend.image, friend.name);
+// 이름 목록 생성 (이전과 동일)
+if (friendsListElement && displayedImageElement && currentFriendNameElement && controlsElement) {
+    friendsData.forEach(friend => {
+        const listItem = document.createElement('li');
+        listItem.textContent = friend.name;
+        listItem.addEventListener('click', () => {
+            displayImage(friend.image, friend.name);
+        });
+        friendsListElement.appendChild(listItem);
     });
-    friendsListElement.appendChild(listItem);
-});
+} else {
+    console.error("필수 HTML 요소(friendsList 등)를 찾을 수 없습니다. ID를 확인해주세요.");
+}
 
-// 이미지 표시 함수
+// 이미지 스타일 및 CSS 변수 업데이트 함수 (이전과 동일)
+function updateImageStyles() {
+    if (!displayedImageElement) return;
+    displayedImageElement.style.setProperty('--current-rotation', `${currentRotation}deg`);
+    displayedImageElement.style.setProperty('--current-scale', currentScale);
+    displayedImageElement.style.setProperty('--current-bw-filter', currentBwFilter || 'none');
+    if (!displayedImageElement.classList.contains('glitching') &&
+        !displayedImageElement.classList.contains('spinning') &&
+        !displayedImageElement.classList.contains('pulsing')) {
+        displayedImageElement.style.transform = `rotate(${currentRotation}deg) scale(${currentScale})`;
+    }
+}
+
+// --- 이미지 기본 효과 함수들 ---
+
+window.zoomIn = function() {
+    if (!displayedImageElement || !displayedImageElement.src) return;
+    currentScale += 0.1;
+    updateImageStyles();
+}
+
+window.zoomOut = function() {
+    if (!displayedImageElement || !displayedImageElement.src) return;
+    if (currentScale > 0.2) {
+        currentScale -= 0.1;
+        updateImageStyles();
+    }
+}
+
+window.rotateImage = function() {
+    if (!displayedImageElement || !displayedImageElement.src) return;
+    currentRotation += 90;
+    updateImageStyles();
+}
+
+window.applyFilter = function() { // 흑백 필터 토글
+    if (!displayedImageElement || !displayedImageElement.src) return;
+    if (currentBwFilter === '') {
+        currentBwFilter = 'grayscale(100%)';
+    } else {
+        currentBwFilter = '';
+    }
+    updateImageStyles();
+}
+
+// --- "장난" 효과 함수들 ---
+
+window.shakeImage = function() {
+    if (!displayedImageElement || !displayedImageElement.src) return;
+    displayedImageElement.style.setProperty('--current-scale-pulse-start', currentScale);
+    displayedImageElement.style.setProperty('--current-rotation', `${currentRotation}deg`);
+    displayedImageElement.classList.add('shake-animation');
+    setTimeout(() => {
+        if (displayedImageElement) displayedImageElement.classList.remove('shake-animation');
+    }, 500);
+}
+
+window.applyGlitch = function() {
+    if (!displayedImageElement || !displayedImageElement.src || displayedImageElement.classList.contains('glitching')) return;
+    
+    const ছিলSpinning = displayedImageElement.classList.contains('spinning');
+    const ছিলPulsing = displayedImageElement.classList.contains('pulsing');
+    if (ছিলSpinning) displayedImageElement.classList.remove('spinning');
+    if (ছিলPulsing) displayedImageElement.classList.remove('pulsing');
+
+    displayedImageElement.classList.add('glitching');
+    setTimeout(() => {
+        if (displayedImageElement) {
+            displayedImageElement.classList.remove('glitching');
+            if (ছিলSpinning) displayedImageElement.classList.add('spinning');
+            else if (ছিলPulsing) displayedImageElement.classList.add('pulsing');
+            else updateImageStyles();
+        }
+    }, 900); // 0.3s * 3회 반복
+}
+
+window.toggleSpin = function() {
+    if (!displayedImageElement || !displayedImageElement.src) return;
+    displayedImageElement.classList.remove('pulsing', 'blinking', 'glitching');
+    displayedImageElement.classList.toggle('spinning');
+    displayedImageElement.style.setProperty('--current-scale', currentScale);
+    if (!displayedImageElement.classList.contains('spinning')) {
+        updateImageStyles();
+    }
+};
+
+window.togglePulse = function() { // 지속적인 두근거림
+    if (!displayedImageElement || !displayedImageElement.src) return;
+    displayedImageElement.classList.remove('spinning', 'blinking', 'glitching');
+    displayedImageElement.style.setProperty('--current-scale-pulse-start', currentScale);
+    displayedImageElement.style.setProperty('--current-rotation-pulse', `${currentRotation}deg`);
+    displayedImageElement.classList.toggle('pulsing');
+    if (!displayedImageElement.classList.contains('pulsing')) {
+        updateImageStyles();
+    }
+};
+
+window.toggleBlink = function() {
+    if (!displayedImageElement || !displayedImageElement.src) return;
+    displayedImageElement.classList.toggle('blinking');
+};
+
+// --- 댄스 타임! 함수들 ---
+function clearPreviousDance() {
+    if (danceTimeoutId) {
+        clearTimeout(danceTimeoutId);
+        danceTimeoutId = null;
+    }
+    if (activeDanceGifElement && activeDanceGifElement.parentNode) {
+        activeDanceGifElement.parentNode.removeChild(activeDanceGifElement);
+        activeDanceGifElement = null;
+    }
+}
+
+// 특정 GIF를 보여주는 공통 함수
+function showSpecificDanceGif(gifKey) { // 이제 GIF 경로 대신 키를 받음
+    if (!displayedImageElement || !displayedImageElement.src || !imageContainerElement) {
+        console.warn("댄스 타임: 표시된 사진이 없거나 필요한 요소가 없습니다.");
+        return;
+    }
+
+    const gifPath = danceGifs[gifKey]; // 키를 사용하여 GIF 경로 가져오기
+    if (!gifPath) {
+        console.error(`댄스 타임: '${gifKey}'에 해당하는 GIF 경로를 찾을 수 없습니다.`);
+        return;
+    }
+
+    clearPreviousDance();
+
+    activeDanceGifElement = document.createElement('img');
+    activeDanceGifElement.src = gifPath;
+    activeDanceGifElement.alt = `${gifKey} dancing GIF`;
+    activeDanceGifElement.classList.add('dance-gif-overlay');
+
+    const mainImageRect = displayedImageElement.getBoundingClientRect();
+    const gifScaleRatio = Math.random() * 0.2 + 0.5; // 50% ~ 70% 크기 (좀 더 크게)
+    
+    activeDanceGifElement.style.width = `${mainImageRect.width * gifScaleRatio}px`;
+    activeDanceGifElement.style.height = 'auto';
+
+    // GIF 위치: 사진 중앙 하단에 더 가깝게
+    activeDanceGifElement.style.bottom = `0%`; // 사진의 맨 아래에 붙도록 시도
+    activeDanceGifElement.style.left = '50%';
+    activeDanceGifElement.style.transform = 'translateX(-50%) translateY(0%)'; // 하단 중앙 정렬 (translateY도 필요할 수 있음)
+                                                                              // 또는 bottom과 left만으로 위치 조정
+
+    // GIF가 이미지 컨테이너의 실제 보이는 영역을 기준으로 위치하도록 수정
+    // displayedImageElement의 실제 offsetTop, offsetLeft를 imageContainer 기준으로 계산
+    const imgStyle = window.getComputedStyle(displayedImageElement);
+    const imgMarginTop = parseFloat(imgStyle.marginTop);
+    const imgMarginLeft = parseFloat(imgStyle.marginLeft);
+
+    // 이미지 컨테이너 내에서 displayedImage의 실제 시작 위치
+    // (displayedImage가 flex 아이템으로 중앙 정렬되므로, 이 계산이 복잡할 수 있음)
+    // 여기서는 displayedImageElement의 크기를 기준으로 bottom, left를 설정했으므로,
+    // activeDanceGifElement를 imageContainerElement가 아닌 displayedImageElement의 부모에 추가하거나,
+    // displayedImageElement 자체에 position:relative를 주고 그 안에 넣는 방법도 고려.
+    // 현재는 imageContainerElement에 추가하고 있으므로, 위치를 imageContainer 기준으로 다시 계산.
+
+    // 간단하게는, imageContainer의 중앙 하단에 위치시키도록 수정:
+    const containerHeight = imageContainerElement.offsetHeight;
+    const gifHeight = mainImageRect.height * gifScaleRatio; // 예상 GIF 높이
+
+    activeDanceGifElement.style.bottom = `5px`; // 컨테이너 하단에서 5px 위
+    activeDanceGifElement.style.left = '50%';
+    activeDanceGifElement.style.transform = 'translateX(-50%)';
+
+
+    if(imageContainerElement) { // imageContainerElement가 존재하는지 확인
+        imageContainerElement.appendChild(activeDanceGifElement);
+    } else {
+        console.error("imageContainerElement를 찾을 수 없습니다.");
+        return;
+    }
+
+
+    const gifDuration = 3000 + (Math.random() * 2000);
+    danceTimeoutId = setTimeout(clearPreviousDance, gifDuration);
+}
+
+// "바나나캣 댄스" 버튼 함수
+window.bananaCatDance = function() {
+    showSpecificDanceGif('banana'); // danceGifs 객체의 'banana' 키 사용
+}
+
+// "해피캣 댄스" 버튼 함수
+window.happyCatDance = function() {
+    showSpecificDanceGif('happy'); // danceGifs 객체의 'happy' 키 사용
+}
+
+// --- 초기화 및 메인 로직 함수 ---
+window.resetImage = function() {
+    if (!displayedImageElement) return;
+    currentRotation = 0;
+    currentScale = 1;
+    currentBwFilter = '';
+
+    displayedImageElement.classList.remove('spinning', 'pulsing', 'blinking', 'glitching', 'shake-animation', 'pulse-animation');
+    clearPreviousDance();
+
+    displayedImageElement.style.setProperty('--current-rotation', '0deg');
+    displayedImageElement.style.setProperty('--current-scale', '1');
+    displayedImageElement.style.setProperty('--current-bw-filter', 'none');
+    
+    displayedImageElement.style.transform = `rotate(0deg) scale(1)`;
+    displayedImageElement.style.filter = 'none';
+}
+
 function displayImage(imagePath, friendName) {
+    // 이 함수들은 이미 이전 답변에서 DOM 요소 null 체크가 추가된 버전으로 가정합니다.
+    // const localDisplayedImageElement = ... 등
+    // 여기서는 전역 변수를 사용한다고 가정합니다.
+    if (!displayedImageElement || !currentFriendNameElement || !controlsElement) {
+        console.error("displayImage: 필수 HTML 요소를 찾을 수 없습니다.");
+        return;
+    }
+    
+    clearPreviousDance();
+
     if (imagePath) {
         displayedImageElement.src = imagePath;
-        displayedImageElement.style.display = 'block';
-        currentFriendNameElement.textContent = friendName + " 写真";
-        controlsElement.style.display = 'block'; // 컨트롤 버튼 보이기
-        resetImageTransformations(); // 이미지 변경 시 변환 초기화
+        displayedImageElement.style.display = 'block'; // 이미지를 보이게 함
+        currentFriendNameElement.textContent = friendName + "の写真";
+        controlsElement.style.display = 'flex'; // 컨트롤 버튼들을 flex로 보이게 함 (CSS에서 flex 설정)
+        resetImage();
     } else {
         displayedImageElement.src = "";
         displayedImageElement.style.display = 'none';
         currentFriendNameElement.textContent = "写真を見る";
-        controlsElement.style.display = 'none'; // 컨트롤 버튼 숨기기
+        controlsElement.style.display = 'none';
     }
 }
 
-// 이미지 변환 초기화 함수
-function resetImageTransformations() {
-    currentRotation = 0;
-    currentScale = 1;
-    currentFilter = '';
-    updateImageTransform();
-}
+// 모든 확대/축소 등 기본 효과 함수들 (생략 없이 다 넣어주세요)
+window.zoomIn = function() { /* 이전 코드 참고 */ if (!displayedImageElement || !displayedImageElement.src) return; currentScale += 0.1; updateImageStyles(); }
+window.zoomOut = function() { /* 이전 코드 참고 */ if (!displayedImageElement || !displayedImageElement.src) return; if (currentScale > 0.2) { currentScale -= 0.1; updateImageStyles(); } }
+window.rotateImage = function() { /* 이전 코드 참고 */ if (!displayedImageElement || !displayedImageElement.src) return; currentRotation += 90; updateImageStyles(); }
+window.applyFilter = function() { /* 이전 코드 참고 */ if (!displayedImageElement || !displayedImageElement.src) return; if (currentBwFilter === '') { currentBwFilter = 'grayscale(100%)'; } else { currentBwFilter = ''; } updateImageStyles(); }
+window.shakeImage = function() { /* 이전 코드 참고 */ if (!displayedImageElement || !displayedImageElement.src) return; displayedImageElement.style.setProperty('--current-scale-pulse-start', currentScale); displayedImageElement.style.setProperty('--current-rotation', `${currentRotation}deg`); displayedImageElement.classList.add('shake-animation'); setTimeout(() => { if (displayedImageElement) displayedImageElement.classList.remove('shake-animation'); }, 500); }
+window.applyGlitch = function() { /* 이전 코드 참고 */ if (!displayedImageElement || !displayedImageElement.src || displayedImageElement.classList.contains('glitching')) return; const prevClasses = ['spinning', 'pulsing'].filter(c => displayedImageElement.classList.contains(c)); prevClasses.forEach(c => displayedImageElement.classList.remove(c)); displayedImageElement.classList.add('glitching'); setTimeout(() => { if (displayedImageElement) { displayedImageElement.classList.remove('glitching'); prevClasses.forEach(c => displayedImageElement.classList.add(c)); if (prevClasses.length === 0) updateImageStyles(); } }, 900); }
+window.toggleSpin = function() { /* 이전 코드 참고 */ if (!displayedImageElement || !displayedImageElement.src) return; ['pulsing', 'blinking', 'glitching'].forEach(c => displayedImageElement.classList.remove(c)); displayedImageElement.classList.toggle('spinning'); displayedImageElement.style.setProperty('--current-scale', currentScale); if (!displayedImageElement.classList.contains('spinning')) updateImageStyles(); };
+window.togglePulse = function() { /* 이전 코드 참고 */ if (!displayedImageElement || !displayedImageElement.src) return; ['spinning', 'blinking', 'glitching'].forEach(c => displayedImageElement.classList.remove(c)); displayedImageElement.style.setProperty('--current-scale-pulse-start', currentScale); displayedImageElement.style.setProperty('--current-rotation-pulse', `${currentRotation}deg`); displayedImageElement.classList.toggle('pulsing'); if (!displayedImageElement.classList.contains('pulsing')) updateImageStyles(); };
+window.toggleBlink = function() { /* 이전 코드 참고 */ if (!displayedImageElement || !displayedImageElement.src) return; displayedImageElement.classList.toggle('blinking'); };
 
-// 이미지 스타일 업데이트 함수
-function updateImageTransform() {
-    displayedImageElement.style.transform = `rotate(${currentRotation}deg) scale(${currentScale})`;
-    displayedImageElement.style.filter = currentFilter;
-}
 
-// 확대 함수
-window.zoomIn = function() {
-    currentScale += 0.1;
-    updateImageTransform();
-}
-
-// 축소 함수
-window.zoomOut = function() {
-    if (currentScale > 0.2) { // 너무 작아지지 않도록
-        currentScale -= 0.1;
-        updateImageTransform();
-    }
-}
-
-// 회전 함수
-window.rotateImage = function() {
-    currentRotation += 90;
-    updateImageTransform();
-}
-
-// 흑백 필터 적용/해제 함수
-window.applyFilter = function() {
-    if (currentFilter === '') {
-        currentFilter = 'grayscale(100%)';
-    } else {
-        currentFilter = '';
-    }
-    updateImageTransform();
-}
-
-// 초기화 함수
-window.resetImage = function() {
-    resetImageTransformations();
-}
-
-// 초기에는 이미지 숨기기 및 컨트롤 숨기기
+// 초기 페이지 로드 시 실행
 displayImage("", "写真を見る");
-
-function updateImageTransform() {
-    displayedImageElement.style.setProperty('--current-rotation', `${currentRotation}deg`);
-    displayedImageElement.style.setProperty('--current-scale', currentScale);
-    displayedImageElement.style.filter = currentFilter;
-    // transform 속성은 CSS 변수를 직접 사용하도록 CSS 파일에서 정의하는 것이 더 깔끔할 수 있습니다.
-    // 예: #displayedImage { transform: rotate(var(--current-rotation)) scale(var(--current-scale)); }
-    // 여기서는 JS에서 직접 설정합니다.
-    displayedImageElement.style.transform = `rotate(<span class="math-inline">\{currentRotation\}deg\) scale\(</span>{currentScale})`;
-}
-
-
-// 흔들기 버튼 함수
-window.shakeImage = function() {
-    if (displayedImageElement.src) {
-        // 현재 스케일과 회전값을 CSS 변수로 설정 (펄스 애니메이션에 필요)
-        displayedImageElement.style.setProperty('--current-scale-pulse-start', currentScale);
-        displayedImageElement.style.setProperty('--current-rotation', `${currentRotation}deg`);
-
-        displayedImageElement.classList.add('shake-animation');
-        // 애니메이션이 끝난 후 클래스 제거
-        setTimeout(() => {
-            displayedImageElement.classList.remove('shake-animation');
-        }, 500); // 애니메이션 시간(0.5s)과 동일하게 설정
-    }
-}
-
-// 펄스 버튼 함수
-window.pulseImage = function() {
-    if (displayedImageElement.src) {
-        // 현재 스케일과 회전값을 CSS 변수로 설정
-        displayedImageElement.style.setProperty('--current-scale-pulse-start', currentScale);
-        displayedImageElement.style.setProperty('--current-rotation', `${currentRotation}deg`);
-
-        displayedImageElement.classList.add('pulse-animation');
-        setTimeout(() => {
-            displayedImageElement.classList.remove('pulse-animation');
-        }, 500);
-    }
-}
-
-// script.js
-
-// ... (이전 friendsData, DOM 요소 선택, displayImage, 기본 효과 함수들) ...
-
-// 이미지 스타일 업데이트 함수 (CSS 변수 사용하도록 수정 또는 확인)
-function updateImageTransform() {
-    // 애니메이션 중에는 JS로 직접 transform을 계속 덮어쓰면 애니메이션이 끊길 수 있으므로,
-    // CSS 변수를 통해 초기 상태나 다른 효과와 연동되도록 합니다.
-    // 다만, 회전/확대/축소는 애니메이션과 별개로 직접 제어해야 할 수 있습니다.
-    // 여기서는 CSS에서 transform을 CSS 변수로 제어한다고 가정하고,
-    // JS에서는 이 변수 값을 바꾸는 역할만 하거나,
-    // 애니메이션 클래스가 없을 때만 직접 transform을 설정하도록 합니다.
-
-    // 현재 스케일과 회전값을 CSS 변수로 설정 (펄스, 회전 애니메이션에서 사용)
-    displayedImageElement.style.setProperty('--current-scale', currentScale);
-    displayedImageElement.style.setProperty('--current-rotation-pulse', `${currentRotation}deg`); // 펄스용 회전
-    displayedImageElement.style.setProperty('--current-scale-pulse-start', currentScale); // 펄스용 시작 스케일
-
-    // 일반 회전/스케일 적용 (애니메이션 클래스가 없을 때)
-    // 또는, 애니메이션은 transform의 특정 부분만 변경하고, 기본 scale/rotation은 JS가 계속 제어
-    if (!displayedImageElement.classList.contains('spinning') &&
-        !displayedImageElement.classList.contains('pulsing')) {
-        displayedImageElement.style.transform = `rotate(${currentRotation}deg) scale(${currentScale})`;
-    } else if (displayedImageElement.classList.contains('pulsing')) {
-        // 펄싱 중에는 스케일은 CSS 애니메이션이, 회전은 JS 변수가 제어 (CSS 변수 통해)
-        // 이미 CSS 변수로 currentRotation을 전달했으므로 추가 조치 필요 없을 수 있음
-    } else if (displayedImageElement.classList.contains('spinning')) {
-        // 스피닝 중에는 회전은 CSS 애니메이션이, 스케일은 JS 변수가 제어 (CSS 변수 통해)
-    }
-
-    displayedImageElement.style.filter = currentFilter;
-}
-
-
-// 기존 확대, 축소, 회전, 필터, 리셋 함수들은 유지하되,
-// 애니메이션 상태와 충돌하지 않도록 updateImageTransform을 잘 호출해야 합니다.
-// 예를 들어, 회전 버튼은 이제 CSS 애니메이션 'spinning'과 별개로 기본 각도만 조절합니다.
-window.rotateImage = function() { // 기본 각도 변경
-    currentRotation += 90;
-    // CSS 변수를 사용하는 경우, 아래가 없어도 애니메이션에 반영될 수 있음
-    displayedImageElement.style.setProperty('--current-rotation-pulse', `${currentRotation}deg`); // 펄스용 회전도 업데이트
-    // 만약 spinning 클래스가 있다면, 애니메이션이 우선될 수 있으므로,
-    // spinning 상태에서는 이 버튼이 어떻게 동작할지 정의 필요 (예: spinning 멈추고 회전 or 기본 각도만 변경)
-    // 여기서는 일단 기본 각도만 변경하고, updateImageTransform()이 적절히 처리한다고 가정
-    updateImageTransform();
-}
-
-
-// --- 새로운 지속 효과 토글 함수들 ---
-
-// 빙글빙글 효과 토글
-window.toggleSpin = function() {
-    if (!displayedImageElement.src) return;
-    // 다른 지속 애니메이션은 끈다 (선택 사항)
-    displayedImageElement.classList.remove('pulsing');
-    displayedImageElement.classList.remove('blinking');
-
-    displayedImageElement.classList.toggle('spinning');
-    // 스피닝 시작/중지 시, 현재 스케일 값을 CSS 변수에 다시 설정해줄 필요가 있을 수 있습니다.
-    displayedImageElement.style.setProperty('--current-scale', currentScale);
-    // updateImageTransform(); // 필요에 따라 호출하여 다른 transform 요소(회전, 스케일) 재적용
-}
-
-// 두근두근 효과 토글
-window.togglePulse = function() {
-    if (!displayedImageElement.src) return;
-    displayedImageElement.classList.remove('spinning');
-    displayedImageElement.classList.remove('blinking');
-
-    // 펄싱 시작/중지 시, 현재 스케일과 회전값을 CSS 변수에 설정
-    displayedImageElement.style.setProperty('--current-scale-pulse-start', currentScale);
-    displayedImageElement.style.setProperty('--current-rotation-pulse', `${currentRotation}deg`);
-
-    displayedImageElement.classList.toggle('pulsing');
-    // updateImageTransform();
-}
-
-// 번쩍번쩍 효과 토글
-window.toggleBlink = function() {
-    if (!displayedImageElement.src) return;
-    displayedImageElement.classList.remove('spinning');
-    displayedImageElement.classList.remove('pulsing');
-
-    displayedImageElement.classList.toggle('blinking');
-    // updateImageTransform();
-}
-
-// 이미지 변경 시 또는 초기화 시 모든 지속 애니메이션 클래스 제거
-function resetImageTransformations() {
-    currentRotation = 0;
-    currentScale = 1;
-    currentFilter = '';
-
-    // 모든 애니메이션 클래스 제거
-    displayedImageElement.classList.remove('spinning', 'pulsing', 'blinking');
-    updateImageTransform();
-}
-
-// 네온 효과 관련 변수
-let currentNeonBorderClass = ''; // 현재 적용된 네온 테두리 클래스
-
-// 이미지 스타일 업데이트 함수 (CSS 변수 사용 확인)
-function updateImageStyleVariables() {
-    displayedImageElement.style.setProperty('--current-rotation', `${currentRotation}deg`);
-    displayedImageElement.style.setProperty('--current-scale', currentScale);
-    displayedImageElement.style.setProperty('--current-filter', currentFilter); // 흑백 필터 등 기본 필터
-    
-    // 네온 효과는 클래스를 통해 CSS 변수(--neon-effect-filter)가 설정되므로, 
-    // 여기서는 직접 설정하지 않아도 됩니다.
-    // 만약 JS로 직접 네온 필터 값을 제어한다면 여기서 설정합니다.
-}
-
-// 기존 updateImageTransform 함수는 이름을 updateImageStyleVariables로 바꾸거나,
-// 이 함수를 호출하도록 수정할 수 있습니다.
-// 여기서는 updateImageStyleVariables를 새로 만들고, 기존 함수들은 이 함수를 사용한다고 가정합니다.
-// 예를 들어 resetImageTransformations 끝에 updateImageStyleVariables(); 호출
-
-// 네온 테두리 효과 토글 (색상별)
-window.toggleNeonBorder = function(color) {
-    if (!displayedImageElement.src) return;
-
-    const newNeonClass = `neon-border-${color}`;
-
-    // 다른 네온 테두리 효과는 제거
-    if (currentNeonBorderClass && currentNeonBorderClass !== newNeonClass) {
-        displayedImageElement.classList.remove(currentNeonBorderClass);
-    }
-
-    // 현재 선택한 네온 테두리 효과 토글
-    displayedImageElement.classList.toggle(newNeonClass);
-
-    // 현재 적용된 클래스 업데이트
-    if (displayedImageElement.classList.contains(newNeonClass)) {
-        currentNeonBorderClass = newNeonClass;
-    } else {
-        currentNeonBorderClass = '';
-    }
-    // 네온 효과가 토글되면 CSS 변수가 자동으로 적용/해제되므로 filter 속성이 업데이트됩니다.
-}
-
-// 모든 네온 효과 끄기
-window.clearNeonEffects = function() {
-    if (!displayedImageElement.src) return;
-    if (currentNeonBorderClass) {
-        displayedImageElement.classList.remove(currentNeonBorderClass);
-        currentNeonBorderClass = '';
-    }
-    // CSS 변수를 직접 초기화 (만약 클래스 제거만으로 안된다면)
-    // displayedImageElement.style.setProperty('--neon-effect-filter', 'none');
-}
-
-// 이미지 변경 시 또는 초기화 시 모든 네온 효과 클래스 제거
-function resetImageTransformations() {
-    currentRotation = 0;
-    currentScale = 1;
-    currentFilter = ''; // 흑백 필터 등 기본 필터 상태 초기화
-
-    // 모든 애니메이션 클래스 제거
-    displayedImageElement.classList.remove('spinning', 'pulsing', 'blinking', 'glitching');
-    
-    // 모든 네온 효과 끄기
-    clearNeonEffects(); 
-    
-    updateImageStyleVariables(); // CSS 변수들 업데이트
-    // 이미지는 CSS에서 var(--current-rotation) 등을 사용하므로 transform 직접 설정 불필요
-    displayedImageElement.style.transform = `rotate(${currentRotation}deg) scale(${currentScale})`; // 기본 transform 복원
-}
-
-// 기존 applyFilter (흑백 필터) 함수 수정 (네온 효과와 충돌 방지)
-window.applyFilter = function() {
-    // 흑백 필터와 네온 효과는 동시에 적용 가능하도록 변경
-    if (currentFilter === '') {
-        currentFilter = 'grayscale(100%)';
-    } else {
-        currentFilter = '';
-    }
-    updateImageStyleVariables(); // --current-filter 변수 업데이트
-}
