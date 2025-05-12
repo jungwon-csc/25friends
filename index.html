@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>２５卒アルバム</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>２５卒の同期たち</h1>
+
+        <div class="name-list">
+            <h2>名前</h2>
+            <ul id="friendsList">
+                </ul>
+        </div>
+
+        <div class="photo-viewer">
+            <h2 id="currentFriendName">写真を見る</h2>
+            <div id="imageContainer">
+                <img id="displayedImage" src="" alt="선택된 동기 사진" style="display:none;">
+            </div>
+            <div id="controls" style="display:none;">
+                <button onclick="zoomIn()">拡大</button>
+                <button onclick="zoomOut()">縮小</button>
+                <button onclick="applyFilter()">モノクロフィルター</button>
+                <button onclick="resetImage()">初期化</button>
+                <hr style="margin: 10px 0;"> <button onclick="toggleSpin()">にこにこ</button>
+                <button onclick="shakeImage()">揺すり</button>
+                <button onclick="togglePulse()">ドキドキ！</button>
+                <button onclick="toggleBlink()">キラキラ</button>
+
+
+                </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

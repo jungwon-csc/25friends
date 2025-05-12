@@ -1,0 +1,146 @@
+body {
+    font-family: sans-serif;
+    margin: 0;
+    padding: 20px;
+    background-color: #f4f4f4;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* 위쪽 정렬 */
+    min-height: 100vh;
+}
+
+.container {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    display: flex; /* 이름 목록과 사진 뷰어를 가로로 배치 */
+    gap: 20px; /* 두 섹션 사이 간격 */
+    max-width: 1000px;
+    width: 100%;
+}
+
+.name-list, .photo-viewer {
+    flex-basis: 50%; /* 각 섹션이 너비를 반씩 차지하도록 */
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.name-list h2, .photo-viewer h2 {
+    margin-top: 0;
+    color: #333;
+    text-align: center;
+}
+
+#friendsList {
+    list-style: none;
+    padding: 0;
+}
+
+#friendsList li {
+    padding: 10px;
+    margin-bottom: 5px;
+    background-color: #e9e9e9;
+    border-radius: 4px;
+    cursor: pointer;
+    text-align: center;
+}
+
+#friendsList li:hover {
+    background-color: #d0d0d0;
+}
+
+#imageContainer {
+    width: 100%;
+    min-height: 300px; /* 사진이 없을 때도 최소 높이 유지 */
+    border: 1px dashed #ccc;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 15px;
+    overflow: hidden; /* 이미지가 너무 클 때 잘리지 않도록 */
+}
+
+#displayedImage {
+    max-width: 100%;
+    max-height: 400px; /* 이미지 최대 높이 제한 */
+    display: block;
+    border-radius: 4px;
+    transition: transform 0.3s ease, filter 0.3s ease; /* 부드러운 효과 전환 */
+}
+
+#controls {
+    text-align: center;
+    margin-top: 10px;
+}
+
+#controls button {
+    padding: 8px 15px;
+    margin: 5px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+#controls button:hover {
+    background-color: #0056b3;
+}
+
+/* 흔들기 애니메이션 */
+@keyframes shake {
+    0%, 100% { transform: translateX(0) rotate(var(--current-rotation, 0deg)) scale(var(--current-scale, 1)); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px) rotate(var(--current-rotation, 0deg)) scale(var(--current-scale, 1)); }
+    20%, 40%, 60%, 80% { transform: translateX(5px) rotate(var(--current-rotation, 0deg)) scale(var(--current-scale, 1)); }
+}
+.shake-animation {
+    animation: shake 0.5s ease-in-out;
+}
+
+/* 펄스 애니메이션 */
+@keyframes pulse {
+    0% { transform: scale(var(--current-scale-pulse-start, 1)) rotate(var(--current-rotation, 0deg)); }
+    50% { transform: scale(calc(var(--current-scale-pulse-start, 1) * 1.1)) rotate(var(--current-rotation, 0deg)); } /* 현재 스케일에서 10% 더 크게 */
+    100% { transform: scale(var(--current-scale-pulse-start, 1)) rotate(var(--current-rotation, 0deg)); }
+}
+.pulse-animation {
+    animation: pulse 0.5s ease-in-out;
+}
+
+/* 계속 빙글빙글 회전 애니메이션 */
+@keyframes spin {
+    from { transform: rotate(0deg) scale(var(--current-scale, 1)); } /* 현재 스케일 유지 */
+    to { transform: rotate(360deg) scale(var(--current-scale, 1)); } /* 현재 스케일 유지 */
+}
+.spinning {
+    animation: spin 2s linear infinite; /* 2초 동안 선형으로 무한 반복 */
+}
+
+/* 계속 두근두근 (펄스) 애니메이션 */
+@keyframes continuous-pulse {
+    0% { transform: scale(var(--current-scale-pulse-start, 1)) rotate(var(--current-rotation-pulse, 0deg)); }
+    50% { transform: scale(calc(var(--current-scale-pulse-start, 1) * 1.1)) rotate(var(--current-rotation-pulse, 0deg)); }
+    100% { transform: scale(var(--current-scale-pulse-start, 1)) rotate(var(--current-rotation-pulse, 0deg)); }
+}
+.pulsing {
+    animation: continuous-pulse 1s ease-in-out infinite; /* 1초 동안 부드럽게 무한 반복 */
+}
+
+/* 번쩍번쩍 효과 애니메이션 (투명도 조절) */
+@keyframes blink-effect {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+.blinking {
+    animation: blink-effect 0.7s linear infinite; /* 0.7초 동안 선형으로 무한 반복 */
+}
+
+/* 이미지 기본 transform 설정 (CSS 변수 사용) */
+#displayedImage {
+    /* ... 기존 스타일 ... */
+    transform: rotate(var(--current-rotation, 0deg)) scale(var(--current-scale, 1));
+    filter: var(--current-filter, none);
+    transition: transform 0.3s ease, filter 0.3s ease, opacity 0.3s ease; /* opacity 트랜지션 추가 */
+}
