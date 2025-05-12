@@ -7,6 +7,7 @@ const friendsData = [
     { name: "先生", image: "./images/suwabe.png" },
     { name: "小枝", image: "./images/koeda.png" },
     { name: "デウン", image: "./images/daeung.png" },
+    { name: "水なし", image: "./images/mizunashi.png" },
     { name: "可愛さの塊", image: "./images/kawaii.png" }
 ];
 
