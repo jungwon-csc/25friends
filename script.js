@@ -2,13 +2,14 @@
 
 // 동기들 정보 (이름과 이미지 경로)
 const friendsData = [
+    { name: "可愛さの塊", image: "./images/kawaii.png" },
     { name: "寝てる大谷", image: "./images/sleeping_otani.png" },
     { name: "普通の大谷", image: "./images/otani.png" },
     { name: "先生", image: "./images/suwabe.png" },
     { name: "小枝", image: "./images/koeda.png" },
     { name: "デウン", image: "./images/daeung.png" },
     { name: "水なし", image: "./images/mizunashi.png" },
-    { name: "可愛さの塊", image: "./images/kawaii.png" }
+    { name: "デヨン", image: "./images/daeyeon.png" }
 ];
 
 // 사용할 댄스 GIF 목록 (images 폴더 안에 실제 파일이 있어야 합니다!)
