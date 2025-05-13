@@ -7,12 +7,12 @@ const friendsData = [
     { name: "寝てる小枝", image: "./images/sleepingkoeda.png" },
     { name: "寝てるデウン", image: "./images/sleepingdaeung.png" },
     { name: "寝てるミソン", image: "./images/sleepingmisung.png" },
+    { name: "怒ったデヨン", image: "./images/daeyeon.png" },
     { name: "先生", image: "./images/suwabe.png" },
     { name: "普通の大谷", image: "./images/otani.png" },
     { name: "普通の小枝", image: "./images/koeda.png" },
     { name: "普通のデウン", image: "./images/daeung.png" },
-    { name: "水なし", image: "./images/mizunashi.png" },
-    { name: "デヨン", image: "./images/daeyeon.png" }
+    { name: "水なし", image: "./images/mizunashi.png" }
 ];
 
 // 사용할 댄스 GIF 목록 (images 폴더 안에 실제 파일이 있어야 합니다!)
