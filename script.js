@@ -6,7 +6,7 @@ const friendsData = [
     { name: "寝てる大谷", image: "./images/sleeping_otani.png" },
     { name: "寝てる小枝", image: "./images/sleepingkoeda.png" },
     { name: "寝てるデウン", image: "./images/sleepingdaeung.png" },
-    { name: "寝てるミソン", image: "./images/sleepingmisung.png" },
+    { name: "寝てるミソン", image: "./images/sleepingmisung.jpg" },
     { name: "先生", image: "./images/suwabe.png" },
     { name: "普通の大谷", image: "./images/otani.png" },
     { name: "普通の小枝", image: "./images/koeda.png" },
