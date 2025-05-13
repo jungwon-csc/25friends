@@ -4,10 +4,13 @@
 const friendsData = [
     { name: "可愛さの塊", image: "./images/kawaii.png" },
     { name: "寝てる大谷", image: "./images/sleeping_otani.png" },
-    { name: "普通の大谷", image: "./images/otani.png" },
+    { name: "寝てる小枝", image: "./images/sleepingkoeda.png" },
+    { name: "寝てるデウン", image: "./images/sleepingdaeung.png" },
+    { name: "寝てるミソン", image: "./images/sleepingmisung.png" },
     { name: "先生", image: "./images/suwabe.png" },
-    { name: "小枝", image: "./images/koeda.png" },
-    { name: "デウン", image: "./images/daeung.png" },
+    { name: "普通の大谷", image: "./images/otani.png" },
+    { name: "普通の小枝", image: "./images/koeda.png" },
+    { name: "普通のデウン", image: "./images/daeung.png" },
     { name: "水なし", image: "./images/mizunashi.png" },
     { name: "デヨン", image: "./images/daeyeon.png" }
 ];
